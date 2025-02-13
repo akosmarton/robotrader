@@ -1,4 +1,4 @@
-module github.com/akosmarton/go-trader
+module github.com/akosmarton/robotrader
 
 go 1.23.6
 

@@ -1,6 +1,6 @@
 services:
   app:
-    image: docker.io/makos/go-trader
+    image: docker.io/makos/robotrader
     build:
       context: .
     environment:
