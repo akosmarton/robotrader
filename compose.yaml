@@ -1,0 +1,14 @@
+services:
+  app:
+    image: docker.io/makos/go-trader
+    build:
+      context: .
+    environment:
+      STORAGE_DIR: /data
+      ALPACA_API_KEY:
+      ALPACA_API_SECRET:
+      MATRIX_HOMESERVER:
+      MATRIX_USER_ID:
+      MATRIX_ACCESS_TOKEN:
+      MATRIX_ROOM_ID:
+
