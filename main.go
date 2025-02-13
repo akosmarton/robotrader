@@ -152,7 +152,7 @@ func main() {
 			} else if signal == SignalBuy {
 				msg := fmt.Sprintf("%s %s", signal, d.Symbol)
 				if storage.GetBuyPrice(d.Symbol) > 0 {
-					msg += fmt.Sprintf(" %+.02f", storage.GetChange(d.Symbol))
+					msg += fmt.Sprintf(" %+.02f%%", storage.GetChange(d.Symbol))
 				}
 				bot.SendText(msg)
 			}
