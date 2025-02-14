@@ -100,6 +100,9 @@ func (s *Storage) GetClose(symbol string) float64 {
 	}
 	t.mu.RLock()
 	defer t.mu.RUnlock()
+	if len(t.close) == 0 {
+		return math.NaN()
+	}
 	return t.close[len(t.close)-1]
 }
 
@@ -186,12 +189,6 @@ func (s *Storage) GetRSI(symbol string) float64 {
 	}
 	return t.rsi[len(t.rsi)-1]
 }
-
-// func (s *Storage) GetTicker(symbol string) *Ticker {
-// 	s.mu.RLock()
-// 	defer s.mu.RUnlock()
-// 	return s.tickers[symbol]
-// }
 
 func (s *Storage) GetSymbols() []string {
 	s.mu.RLock()
