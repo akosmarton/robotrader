@@ -67,9 +67,9 @@ func main() {
 	}
 
 	// Worker pool for fetching history candles
-	jobs := make(chan string, 10)
+	jobs := make(chan string)
 	wg := sync.WaitGroup{}
-	for w := 0; w < 10; w++ {
+	for workers := 0; workers < 10; workers++ {
 		wg.Add(1)
 		go func(symbols <-chan string) {
 			defer wg.Done()
