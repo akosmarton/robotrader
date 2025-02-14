@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/alpacahq/alpaca-trade-api-go/v3/marketdata"
@@ -15,17 +16,14 @@ type StreamData struct {
 }
 
 type Fetcher struct {
-	sub           chan string
-	unsub         chan string
 	stream        chan StreamData
 	client        *marketdata.Client
 	stream_client *stream.StocksClient
+	mu            sync.Mutex
 }
 
 func NewFetcher(apiKey string, secretKey string) *Fetcher {
 	return &Fetcher{
-		sub:    make(chan string, 100),
-		unsub:  make(chan string, 100),
 		stream: make(chan StreamData, 100),
 		client: marketdata.NewClient(marketdata.ClientOpts{
 			APIKey:    apiKey,
@@ -73,46 +71,33 @@ func (f *Fetcher) handler(bar stream.Bar) {
 	}
 }
 
-func (f *Fetcher) Run(ctx context.Context) error {
-	if err := f.stream_client.Connect(ctx); err != nil {
-		return err
-	}
+func (f *Fetcher) Connect(ctx context.Context) error {
+	return f.stream_client.Connect(ctx)
+}
 
+func (f *Fetcher) Run(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case err := <-f.stream_client.Terminated():
 			return fmt.Errorf("Terminated: %v", err)
-		case s := <-f.sub:
-			if err := f.stream_client.SubscribeToDailyBars(f.handler, s); err != nil {
-				return fmt.Errorf("SubscribeToDailyBars: %v", err)
-			}
-		case s := <-f.unsub:
-			fmt.Println("Unsubscribing from", s)
-			if err := f.stream_client.UnsubscribeFromDailyBars(s); err != nil {
-				return fmt.Errorf("UnsubscribeFromDailyBars: %v", err)
-			}
 		}
 	}
 }
 
 func (f *Fetcher) Sub(symbol string) error {
-	if len(f.sub) == cap(f.sub) {
-		return fmt.Errorf("sub buffer is full")
-	}
-	f.sub <- symbol
-	return nil
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.stream_client.SubscribeToDailyBars(f.handler, symbol)
 }
 
 func (f *Fetcher) Unsub(symbol string) error {
-	if len(f.unsub) == cap(f.unsub) {
-		return fmt.Errorf("unsub buffer is full")
-	}
-	f.unsub <- symbol
-	return nil
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.stream_client.UnsubscribeFromDailyBars(symbol)
 }
 
-func (f *Fetcher) Stream() chan StreamData {
+func (f *Fetcher) Stream() <-chan StreamData {
 	return f.stream
 }

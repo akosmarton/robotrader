@@ -16,6 +16,11 @@ type Bot struct {
 	msg       chan string
 }
 
+func (b *Bot) Write(p []byte) (n int, err error) {
+	b.SendText(string(p))
+	return len(p), nil
+}
+
 func NewBot(homeserver string, userId string, accessToken string, roomId string) *Bot {
 	client, err := mautrix.NewClient(homeserver, id.UserID(userId), accessToken)
 	if err != nil {
