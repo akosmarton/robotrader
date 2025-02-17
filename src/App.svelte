@@ -18,7 +18,7 @@
   $effect(() => {
     if (symbol != "") {
       fetchChartData(symbol);
-      scroll(0,0);
+      scroll(0, 0);
     }
   });
 
@@ -30,30 +30,7 @@
 
   async function fetchChartData(symbol) {
     const response = await fetch("/api/tickers/" + symbol);
-    const data = await response.json();
-    let ohlc = [];
-    let bbh = [];
-    let bbl = [];
-    let stochk = [];
-    let stochd = [];
-
-    data.Timestamp.forEach((x, i) => {
-      ohlc[i] = [x, data.Open[i], data.Close[i], data.Low[i], data.High[i]];
-      bbh[i] = [x, data.BBH[i] ? data.BBH[i].toFixed(2) : null];
-      bbl[i] = [x, data.BBL[i] ? data.BBL[i].toFixed(2) : null];
-      stochk[i] = [x, data.StochK[i] ? data.StochK[i].toFixed(2) : null];
-      stochd[i] = [x, data.StochD[i] ? data.StochD[i].toFixed(2) : null];
-    });
-    chartData = {
-      ohlc,
-      bbh,
-      bbl,
-      stochk,
-      stochd,
-      open: data.Open[data.Open.length - 1],
-      close: data.Close[data.Close.length - 1],
-      buyPrice: data.BuyPrice,
-    };
+    chartData = await response.json();
     await updateChart();
   }
 
@@ -64,6 +41,9 @@
         left: "center",
       },
       animation: false,
+      dataset: {
+        source: chartData,
+      },
       xAxis: [
         { type: "time", gridIndex: 0 },
         { type: "time", gridIndex: 1 },
@@ -123,46 +103,69 @@
             borderColor0: "#eb5454",
           },
           name: "OHLC",
-          data: chartData["ohlc"],
+          encode: {
+            x: "Timestamp",
+            y: ["Open", "Close", "Low", "High"],
+          },
+          seriesLayoutBy: "column",
         },
         {
           type: "line",
           markLine: {
             lineStyle: {
-              color: chartData["close"] > chartData["open"] ? "green" : "red",
+              color: chartData["Close"].slice(-1) > chartData["Open"].slice(-1) ? "green" : "red",
               width: 1,
             },
-            data: [{ yAxis: chartData["close"] }],
+            data: [{ yAxis: chartData["Close"].slice(-1) }],
+          },
+          data: [],
+          tooltip: {
+            valueFormatter: (value) => value.toFixed(2),
           },
         },
         {
           type: "line",
           markLine: {
-            data: [{ yAxis: chartData["buyPrice"] }],
+            data: [{ yAxis: chartData["BuyPrice"].toFixed(2) }],
             lineStyle: {
               color: "blue",
               width: 1,
             },
           },
+          data: [],
         },
         {
           type: "line",
           name: "BBH",
-          data: chartData["bbh"],
+          seriesLayoutBy: "column",
+          encode: {
+            x: "Timestamp",
+            y: "BBH",
+          },
           showSymbol: false,
           color: "gray",
           lineStyle: {
             width: 1,
           },
+          tooltip: {
+            valueFormatter: (value) => value.toFixed(2),
+          },
         },
         {
           type: "line",
           name: "BBL",
-          data: chartData["bbl"],
+          seriesLayoutBy: "column",
+          encode: {
+            x: "Timestamp",
+            y: "BBL",
+          },
           showSymbol: false,
           color: "gray",
           lineStyle: {
             width: 1,
+          },
+          tooltip: {
+            valueFormatter: (value) => value.toFixed(2),
           },
         },
         {
@@ -172,7 +175,15 @@
           showSymbol: false,
           xAxisIndex: 1,
           yAxisIndex: 1,
+          seriesLayoutBy: "column",
+          encode: {
+            x: "Timestamp",
+            y: "StochK",
+          },
           smooth: true,
+          tooltip: {
+            valueFormatter: (value) => value.toFixed(2),
+          },
         },
         {
           type: "line",
@@ -182,6 +193,14 @@
           xAxisIndex: 1,
           yAxisIndex: 1,
           smooth: true,
+          seriesLayoutBy: "column",
+          encode: {
+            x: "Timestamp",
+            y: "StochD",
+          },
+          tooltip: {
+            valueFormatter: (value) => value.toFixed(2),
+          },
         },
         {
           type: "line",
@@ -194,6 +213,7 @@
               width: 1,
             },
           },
+          data: [],
         },
       ],
     };
@@ -220,24 +240,24 @@
     <thead>
       <tr>
         <th>Symbol</th>
-        <th>Buy Price</th>
-        <th>Close</th>
-        <th>Change</th>
-        <th>Signal</th>
+        <th class="right">Buy Price</th>
+        <th class="right">Close</th>
+        <th class="right">Change</th>
+        <th class="center">Signal</th>
       </tr>
     </thead>
     <tbody>
       {#each tickers as ticker}
         <tr>
           <td><a href="#{ticker.Symbol}">{ticker.Symbol}</a></td>
-          <td
-            >{#if ticker.BuyPrice > 0}{ticker.BuyPrice}{/if}</td
+          <td class="right"
+            >{#if ticker.BuyPrice > 0}${ticker.BuyPrice.toFixed(2)}{/if}</td
           >
-          <td>{ticker.Close}</td>
-          <td
+          <td class="right">${ticker.Close.toFixed(2)}</td>
+          <td class="right"
             >{#if ticker.BuyPrice > 0}{ticker.Change.toFixed(2)}%{/if}</td
           >
-          <td>{ticker.Signal}</td>
+          <td class="center">{ticker.Signal}</td>
         </tr>
       {/each}
     </tbody>
@@ -248,5 +268,23 @@
   #chart {
     width: auto;
     height: 600px;
+  }
+  .right {
+    text-align: right;
+  }
+  .center {
+    text-align: center;
+  }
+  a:link {
+    text-decoration: none;
+  }
+  a:visited {
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: none;
+  }
+  a:active {
+    text-decoration: none;
   }
 </style>

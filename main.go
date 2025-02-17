@@ -129,12 +129,10 @@ func main() {
 		return c.String(200, "OK")
 	})
 	e.GET("/api/tickers/", func(c echo.Context) error {
-		c.Response().Header().Set("Access-Control-Allow-Origin", "*")
 		tickers := storage.GetTickerTable()
 		return c.JSON(200, tickers)
 	})
 	e.GET("/api/tickers/:symbol", func(c echo.Context) error {
-		c.Response().Header().Set("Access-Control-Allow-Origin", "*")
 		symbol := c.Param("symbol")
 		chartData := storage.GetChartData(symbol)
 		return c.JSON(200, chartData)
