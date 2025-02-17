@@ -77,6 +77,89 @@ func (s *Storage) GetAllTimestamp(symbol string) []time.Time {
 	return ret
 }
 
+type ChartData struct {
+	Timestamp []time.Time
+	Open      []float64
+	High      []float64
+	Low       []float64
+	Close     []float64
+	BBH       []float64
+	BBM       []float64
+	BBL       []float64
+	StochK    []float64
+	StochD    []float64
+	BuyPrice  float64
+}
+
+func (s *Storage) GetChartData(symbol string) *ChartData {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	t, ok := s.tickers[symbol]
+	if !ok {
+		return nil
+	}
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+	ret := &ChartData{
+		Timestamp: make([]time.Time, len(t.timestamp)),
+		Open:      make([]float64, len(t.open)),
+		High:      make([]float64, len(t.high)),
+		Low:       make([]float64, len(t.low)),
+		Close:     make([]float64, len(t.close)),
+		BBH:       make([]float64, len(t.bbh)),
+		BBM:       make([]float64, len(t.bbm)),
+		BBL:       make([]float64, len(t.bbl)),
+		StochK:    make([]float64, len(t.stochK)),
+		StochD:    make([]float64, len(t.stochD)),
+		BuyPrice:  t.buyPrice,
+	}
+	copy(ret.Timestamp, t.timestamp)
+	copy(ret.Open, t.open)
+	copy(ret.High, t.high)
+	copy(ret.Low, t.low)
+	copy(ret.Close, t.close)
+	copy(ret.BBH, t.bbh)
+	copy(ret.BBM, t.bbm)
+	copy(ret.BBL, t.bbl)
+	copy(ret.StochK, t.stochK)
+	copy(ret.StochD, t.stochD)
+	return ret
+}
+
+type TickerTable struct {
+	Symbol   string
+	BuyPrice float64
+	Close    float64
+	Change   float64
+	Signal   Signal
+}
+
+func (s *Storage) GetTickerTable() []TickerTable {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	ret := make([]TickerTable, 0, len(s.tickers))
+
+	for s, t := range s.tickers {
+		t.mu.RLock()
+		defer t.mu.RUnlock()
+		change := 0.0
+		if t.buyPrice > 0 {
+			change = t.close[len(t.close)-1]/t.buyPrice*100 - 100
+		}
+		if len(t.close) == 0 {
+			continue
+		}
+		ret = append(ret, TickerTable{
+			Symbol:   s,
+			BuyPrice: t.buyPrice,
+			Close:    t.close[len(t.close)-1],
+			Change:   change,
+			Signal:   t.signal,
+		})
+	}
+	return ret
+}
+
 func (s *Storage) GetAllClose(symbol string) []float64 {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -158,6 +241,21 @@ func (s *Storage) GetBB(symbol string) (float64, float64, float64) {
 		return math.NaN(), math.NaN(), math.NaN()
 	}
 	return t.bbh[len(t.bbh)-1], t.bbm[len(t.bbm)-1], t.bbl[len(t.bbl)-1]
+}
+
+func (s *Storage) GetStoch(symbol string) (float64, float64) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	t, ok := s.tickers[symbol]
+	if !ok {
+		return math.NaN(), math.NaN()
+	}
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+	if len(t.stochK) == 0 || len(t.stochD) == 0 {
+		return math.NaN(), math.NaN()
+	}
+	return t.stochK[len(t.stochK)-1], t.stochD[len(t.stochD)-1]
 }
 
 func (s *Storage) GetSMA(symbol string) float64 {

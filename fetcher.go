@@ -36,23 +36,22 @@ func NewFetcher(apiKey string, secretKey string) *Fetcher {
 
 func (f *Fetcher) Fetch(symbol string, start time.Time, end time.Time) ([]Candle, error) {
 	bars, err := f.client.GetBars(symbol, marketdata.GetBarsRequest{
-		TimeFrame: marketdata.OneDay,
-		Start:     start,
-		End:       end,
+		TimeFrame:  marketdata.OneDay,
+		Start:      start,
+		End:        end,
+		Adjustment: marketdata.All,
 	})
 	if err != nil {
 		return nil, err
 	}
 	candles := make([]Candle, len(bars))
-	for _, bar := range bars {
-		candles = append(candles, Candle{
-			Timestamp: bar.Timestamp,
-			Open:      bar.Open,
-			High:      bar.High,
-			Low:       bar.Low,
-			Close:     bar.Close,
-			Volume:    float64(bar.Volume),
-		})
+	for k, v := range bars {
+		candles[k].Timestamp = v.Timestamp
+		candles[k].Open = v.Open
+		candles[k].High = v.High
+		candles[k].Low = v.Low
+		candles[k].Close = v.Close
+		candles[k].Volume = float64(v.Volume)
 	}
 	return candles, nil
 }

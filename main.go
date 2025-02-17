@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
@@ -15,10 +17,15 @@ import (
 	"time"
 
 	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
+//go:embed dist
+var distDir embed.FS
+
 const (
-	DAYS = 180
+	DAYS = 365
 )
 
 func main() {
@@ -116,11 +123,47 @@ func main() {
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
 
+	// Web server
+	e := echo.New()
+	e.GET("/health", func(c echo.Context) error {
+		return c.String(200, "OK")
+	})
+	e.GET("/api/tickers/", func(c echo.Context) error {
+		c.Response().Header().Set("Access-Control-Allow-Origin", "*")
+		tickers := storage.GetTickerTable()
+		return c.JSON(200, tickers)
+	})
+	e.GET("/api/tickers/:symbol", func(c echo.Context) error {
+		c.Response().Header().Set("Access-Control-Allow-Origin", "*")
+		symbol := c.Param("symbol")
+		chartData := storage.GetChartData(symbol)
+		return c.JSON(200, chartData)
+	})
+	e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
+		Root:       "dist",
+		Index:      "index.html",
+		HTML5:      true,
+		Filesystem: http.FS(distDir),
+	}))
+
+	go func() {
+		if err := e.Start(":8080"); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Failed to start web server: %v", err)
+		}
+		e.Close()
+	}()
+
+	// Main loop
 	for {
 		select {
 		case <-shutdown:
 			cancel()
 		case <-ctx.Done():
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			if err := e.Shutdown(ctx); err != nil {
+				log.Printf("Failed to shutdown web server: %v", err)
+			}
 			return
 		case msg := <-bot.Message():
 			s := strings.Split(msg, " ")
@@ -153,6 +196,15 @@ func main() {
 				symbol := strings.ToUpper(s[1])
 				fetcher.Unsub(symbol)
 				storage.DelTicker(symbol)
+			case "ind": // Print indicators
+				if len(s) < 2 {
+					continue
+				}
+				symbol := strings.ToUpper(s[1])
+				close := storage.GetClose(symbol)
+				bbl, _, bbh := storage.GetBB(symbol)
+				stochK, stochD := storage.GetStoch(symbol)
+				bot.SendText(fmt.Sprintf("%s: Close $%.02f, BB(%.02f, %.02f), Stoch(%.02f, %0.2f)", symbol, close, bbl, bbh, stochK, stochD))
 			case "ls": // List tickers
 				w := table.NewWriter()
 				w.Style().Options.DrawBorder = false

@@ -79,3 +79,17 @@ func (b *Bot) SendCode(msg string) {
 		FormattedBody: "<pre><code class=\"language-plaintext\">" + msg + "</code></pre>",
 	})
 }
+
+func (b *Bot) SendImage(buf []byte, contentType string, filename string) error {
+	resp, err := b.client.UploadBytes(context.Background(), buf, contentType)
+	if err != nil {
+		return err
+	}
+	_, err = b.client.SendMessageEvent(context.Background(), b.roomId, event.EventMessage, event.MessageEventContent{
+		MsgType:  event.MsgImage,
+		Body:     filename,
+		URL:      id.ContentURIString(resp.ContentURI.String()),
+		FileName: filename,
+	})
+	return err
+}

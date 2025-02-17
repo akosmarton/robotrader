@@ -1,3 +1,8 @@
+FROM docker.io/library/node:slim as node_builder
+WORKDIR /app/
+COPY . .
+RUN npm install && npm run build
+
 FROM golang:1.23 as builder
 
 WORKDIR /app

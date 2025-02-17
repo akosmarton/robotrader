@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	KEEP = 120
+	KEEP = 250
 )
 
 type Candle struct {
@@ -37,6 +37,8 @@ type Ticker struct {
 	volume    []float64
 
 	sma        []float64
+	stochK     []float64
+	stochD     []float64
 	rsi        []float64
 	macd       []float64
 	macdSignal []float64
@@ -77,23 +79,30 @@ func (t *Ticker) calc() Signal {
 	t.rsi = talib.Rsi(t.close, 14)
 	t.macd, t.macdSignal, t.macdHist = talib.Macd(t.close, 12, 26, 9)
 	t.bbh, t.bbm, t.bbl = talib.BBands(t.close, 20, 2, 2, talib.SMA)
-
+	t.stochK, t.stochD = talib.Stoch(t.high, t.low, t.close, 14, 3, talib.SMA, 3, talib.SMA)
 	lastSignal := t.signal
 
 	i := len(t.close) - 1
-	if t.rsi[i] > 0 && t.bbh[i] > 0 && t.bbl[i] > 0 {
-		if t.close[i] > t.bbh[i] || t.rsi[i] > 70 {
-			t.signal = SignalSell
-		} else if t.close[i] < t.bbl[i] || t.rsi[i] < 30 {
-			t.signal = SignalBuy
-		} else {
-			t.signal = SignalHold
-		}
+
+	// Not enough data
+	if t.bbh[i] == 0 || t.bbl[i] == 0 || t.close[i] == 0 || t.stochD[i] == 0 || t.stochK[i] == 0 {
+		return SignalHold
 	}
 
+	// Algorithm
+	if t.close[i] > t.bbh[i] && t.stochK[i] > 80 && t.stochD[i] > 80 {
+		t.signal = SignalSell
+	} else if t.close[i] < t.bbl[i] && t.stochK[i] < 20 && t.stochD[i] < 20 {
+		t.signal = SignalBuy
+	} else {
+		t.signal = SignalHold
+	}
+
+	// Update only if signal changed
 	if t.signal != SignalHold && lastSignal != t.signal {
 		return t.signal
 	}
+
 	return SignalHold
 }
 
@@ -122,7 +131,7 @@ func (t *Ticker) Insert(candle ...Candle) Signal {
 			t.volume = slices.Insert(t.volume, n, c.Volume)
 		}
 	}
-	t.keep(KEEP)
+	// t.keep(KEEP)
 	return t.calc()
 }
 
