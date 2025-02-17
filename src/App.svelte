@@ -2,10 +2,13 @@
   import * as echarts from "echarts";
   import { onMount } from "svelte";
 
-  let chart = null;
+  const updateInterval = 10000;
+
+  let chart;
   let tickers = $state([]);
   let symbol = $state(window.location.hash.replace("#", ""));
   let chartData = $state({});
+  let timer;
 
   window.addEventListener("hashchange", () => {
     symbol = window.location.hash.replace("#", "");
@@ -17,7 +20,11 @@
 
   $effect(() => {
     if (symbol != "") {
-      fetchChartData(symbol);
+      if (timer) {
+        clearInterval(timer);
+      }
+      fetchChartData();
+      timer = setInterval(fetchChartData, updateInterval);
       scroll(0, 0);
     }
   });
@@ -28,7 +35,7 @@
     tickers.sort((a, b) => a.Symbol.localeCompare(b.Symbol));
   }
 
-  async function fetchChartData(symbol) {
+  async function fetchChartData() {
     const response = await fetch("/api/tickers/" + symbol);
     chartData = await response.json();
     await updateChart();
@@ -222,6 +229,7 @@
 
   onMount(async () => {
     await fetchTickers();
+    setInterval(fetchTickers, updateInterval);
   });
 
   function charts(node) {
