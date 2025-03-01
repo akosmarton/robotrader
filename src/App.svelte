@@ -41,16 +41,9 @@
     await updateChart();
   }
 
-  async function updateChart() {
+  async function initChart() {
     let options = {
-      title: {
-        text: symbol,
-        left: "center",
-      },
       animation: false,
-      dataset: {
-        source: chartData,
-      },
       xAxis: [
         { type: "time", gridIndex: 0 },
         { type: "time", gridIndex: 1 },
@@ -100,6 +93,19 @@
           bottom: 80,
         },
       ],
+    }
+    chart.setOption(options);
+  }
+
+  async function updateChart() {
+    let options = {
+      title: {
+        text: symbol,
+        left: "center",
+      },
+      dataset: {
+        source: chartData,
+      },
       series: [
         {
           type: "candlestick",
@@ -234,6 +240,7 @@
 
   function charts(node) {
     chart = echarts.init(node, null, { renderer: "svg" });
+    initChart();
   }
 </script>
 
