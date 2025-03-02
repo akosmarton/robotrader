@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"embed"
 	"fmt"
 	"io"
 	"log"
@@ -18,11 +17,7 @@ import (
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
-
-//go:embed dist
-var distDir embed.FS
 
 const (
 	DAYS = 730
@@ -137,12 +132,8 @@ func main() {
 		chartData := storage.GetChartData(symbol)
 		return c.JSON(200, chartData)
 	})
-	e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
-		Root:       "dist",
-		Index:      "index.html",
-		HTML5:      true,
-		Filesystem: http.FS(distDir),
-	}))
+	e.Static("/", "dist")
+	e.HideBanner = true
 
 	go func() {
 		if err := e.Start(":8080"); err != nil && err != http.ErrServerClosed {
