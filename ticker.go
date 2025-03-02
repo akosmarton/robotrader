@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	KEEP = 250
+	KEEP = 500
 )
 
 type Candle struct {
@@ -70,6 +70,8 @@ func NewTicker(symbol string, buyPrice float64) *Ticker {
 		bbm:        []float64{},
 		bbl:        []float64{},
 		mfi:        []float64{},
+		stochK:     []float64{},
+		stochD:     []float64{},
 		signal:     SignalHold,
 	}
 }
@@ -78,7 +80,7 @@ func (t *Ticker) calc() Signal {
 	if len(t.close) < 30 {
 		return SignalHold
 	}
-	t.sma = talib.Sma(t.close, 14)
+	t.sma = talib.Sma(t.close, 200)
 	t.rsi = talib.Rsi(t.close, 14)
 	t.macd, t.macdSignal, t.macdHist = talib.Macd(t.close, 12, 26, 9)
 	t.bbh, t.bbm, t.bbl = talib.BBands(t.close, 20, 2, 2, talib.SMA)

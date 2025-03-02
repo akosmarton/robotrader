@@ -53,6 +53,9 @@
     chartData['BBL'] = chartData['BBL'].map(value => {
       return value == 0.0 ? null : value;
     });
+    chartData['SMA'] = chartData['SMA'].map(value => {
+      return value == 0.0 ? null : value;
+    });
     await updateChart();
   }
 
@@ -196,6 +199,24 @@
           lineStyle: {
             width: 1,
           },
+          tooltip: {
+            valueFormatter: (value) => value.toFixed(2),
+          },
+        },
+        {
+          type: "line",
+          name: "SMA",
+          seriesLayoutBy: "column",
+          encode: {
+            x: "Timestamp",
+            y: "SMA",
+          },
+          showSymbol: false,
+          color: "red",
+          lineStyle: {
+            width: 1,
+          },
+          smooth: true,
           tooltip: {
             valueFormatter: (value) => value.toFixed(2),
           },

@@ -25,7 +25,7 @@ import (
 var distDir embed.FS
 
 const (
-	DAYS = 365
+	DAYS = 730
 )
 
 func main() {

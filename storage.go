@@ -89,6 +89,7 @@ type ChartData struct {
 	StochK    []float64
 	StochD    []float64
 	MFI       []float64
+	SMA       []float64
 	BuyPrice  float64
 }
 
@@ -113,6 +114,7 @@ func (s *Storage) GetChartData(symbol string) *ChartData {
 		StochK:    make([]float64, len(t.stochK)),
 		StochD:    make([]float64, len(t.stochD)),
 		MFI:       make([]float64, len(t.mfi)),
+		SMA:       make([]float64, len(t.sma)),
 		BuyPrice:  t.buyPrice,
 	}
 	copy(ret.Timestamp, t.timestamp)
@@ -126,6 +128,7 @@ func (s *Storage) GetChartData(symbol string) *ChartData {
 	copy(ret.StochK, t.stochK)
 	copy(ret.StochD, t.stochD)
 	copy(ret.MFI, t.mfi)
+	copy(ret.SMA, t.sma)
 	return ret
 }
 
