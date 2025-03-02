@@ -88,6 +88,7 @@ type ChartData struct {
 	BBL       []float64
 	StochK    []float64
 	StochD    []float64
+	MFI       []float64
 	BuyPrice  float64
 }
 
@@ -111,6 +112,7 @@ func (s *Storage) GetChartData(symbol string) *ChartData {
 		BBL:       make([]float64, len(t.bbl)),
 		StochK:    make([]float64, len(t.stochK)),
 		StochD:    make([]float64, len(t.stochD)),
+		MFI:       make([]float64, len(t.mfi)),
 		BuyPrice:  t.buyPrice,
 	}
 	copy(ret.Timestamp, t.timestamp)
@@ -123,6 +125,7 @@ func (s *Storage) GetChartData(symbol string) *ChartData {
 	copy(ret.BBL, t.bbl)
 	copy(ret.StochK, t.stochK)
 	copy(ret.StochD, t.stochD)
+	copy(ret.MFI, t.mfi)
 	return ret
 }
 
@@ -271,6 +274,21 @@ func (s *Storage) GetSMA(symbol string) float64 {
 		return math.NaN()
 	}
 	return t.sma[len(t.sma)-1]
+}
+
+func (s *Storage) GetMFI(symbol string) float64 {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	t, ok := s.tickers[symbol]
+	if !ok {
+		return math.NaN()
+	}
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+	if len(t.mfi) == 0 {
+		return math.NaN()
+	}
+	return t.mfi[len(t.mfi)-1]
 }
 
 func (s *Storage) GetRSI(symbol string) float64 {

@@ -202,7 +202,8 @@ func main() {
 				close := storage.GetClose(symbol)
 				bbl, _, bbh := storage.GetBB(symbol)
 				stochK, stochD := storage.GetStoch(symbol)
-				bot.SendText(fmt.Sprintf("%s: Close $%.02f, BB(%.02f, %.02f), Stoch(%.02f, %0.2f)", symbol, close, bbl, bbh, stochK, stochD))
+				mfi := storage.GetMFI(symbol)
+				bot.SendText(fmt.Sprintf("%s: Close $%.02f, BB(%.02f, %.02f), Stoch(%.02f, %0.2f), MFI(%.02f)", symbol, close, bbl, bbh, stochK, stochD, mfi))
 			case "ls": // List tickers
 				w := table.NewWriter()
 				w.Style().Options.DrawBorder = false

@@ -46,6 +46,7 @@ type Ticker struct {
 	bbh        []float64
 	bbm        []float64
 	bbl        []float64
+	mfi        []float64
 
 	signal Signal
 }
@@ -68,6 +69,8 @@ func NewTicker(symbol string, buyPrice float64) *Ticker {
 		bbh:        []float64{},
 		bbm:        []float64{},
 		bbl:        []float64{},
+		mfi:        []float64{},
+		signal:     SignalHold,
 	}
 }
 
@@ -80,6 +83,7 @@ func (t *Ticker) calc() Signal {
 	t.macd, t.macdSignal, t.macdHist = talib.Macd(t.close, 12, 26, 9)
 	t.bbh, t.bbm, t.bbl = talib.BBands(t.close, 20, 2, 2, talib.SMA)
 	t.stochK, t.stochD = talib.Stoch(t.high, t.low, t.close, 14, 3, talib.SMA, 3, talib.SMA)
+	t.mfi = talib.Mfi(t.high, t.low, t.close, t.volume, 14)
 	lastSignal := t.signal
 
 	i := len(t.close) - 1
@@ -131,7 +135,7 @@ func (t *Ticker) Insert(candle ...Candle) Signal {
 			t.volume = slices.Insert(t.volume, n, c.Volume)
 		}
 	}
-	// t.keep(KEEP)
+	t.keep(KEEP)
 	return t.calc()
 }
 

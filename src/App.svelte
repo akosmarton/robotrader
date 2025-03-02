@@ -115,7 +115,7 @@
             borderColor: "#47b262",
             borderColor0: "#eb5454",
           },
-          name: "OHLC",
+          name: "Close",
           encode: {
             x: "Timestamp",
             y: ["Open", "Close", "Low", "High"],
@@ -129,6 +129,8 @@
               color: chartData["Close"].slice(-1) > chartData["Open"].slice(-1) ? "green" : "red",
               width: 1,
             },
+            silent: true,
+            symbol: ["none", "none"],
             data: [{ yAxis: chartData["Close"].slice(-1) }],
           },
           data: [],
@@ -144,6 +146,8 @@
               color: "blue",
               width: 1,
             },
+            silent: true,
+            symbol: ["none", "none"],
           },
           data: [],
         },
@@ -221,6 +225,8 @@
           yAxisIndex: 1,
           markLine: {
             data: [{ yAxis: 20.0 }, { yAxis: 80.0 }],
+            silent: true,
+            symbol: ["none", "none"],
             lineStyle: {
               color: "gray",
               width: 1,
@@ -228,6 +234,23 @@
           },
           data: [],
         },
+        {
+          type: "line",
+          name: "MFI",
+          data: chartData["mfi"],
+          showSymbol: false,
+          xAxisIndex: 1,
+          yAxisIndex: 1,
+          smooth: true,
+          seriesLayoutBy: "column",
+          encode: {
+            x: "Timestamp",
+            y: "MFI",
+          },
+          tooltip: {
+            valueFormatter: (value) => value.toFixed(2),
+          },
+        }
       ],
     };
     chart.setOption(options);
