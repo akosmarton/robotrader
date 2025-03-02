@@ -38,6 +38,21 @@
   async function fetchChartData() {
     const response = await fetch("/api/tickers/" + symbol);
     chartData = await response.json();
+    chartData['MFI'] = chartData['MFI'].map(value => {
+      return value == 0.0 ? null : value;
+    });
+    chartData['StochK'] = chartData['StochK'].map(value => {
+      return value == 0.0 ? null : value;
+    });
+    chartData['StochD'] = chartData['StochD'].map(value => {
+      return value == 0.0 ? null : value;
+    });
+    chartData['BBH'] = chartData['BBH'].map(value => {
+      return value == 0.0 ? null : value;
+    });
+    chartData['BBL'] = chartData['BBL'].map(value => {
+      return value == 0.0 ? null : value;
+    });
     await updateChart();
   }
 
@@ -93,7 +108,7 @@
           bottom: 80,
         },
       ],
-    }
+    };
     chart.setOption(options);
   }
 
@@ -193,6 +208,9 @@
           xAxisIndex: 1,
           yAxisIndex: 1,
           seriesLayoutBy: "column",
+          lineStyle: {
+            width: 1,
+          },
           encode: {
             x: "Timestamp",
             y: "StochK",
@@ -214,6 +232,9 @@
           encode: {
             x: "Timestamp",
             y: "StochD",
+          },
+          lineStyle: {
+            width: 1,
           },
           tooltip: {
             valueFormatter: (value) => value.toFixed(2),
@@ -247,10 +268,13 @@
             x: "Timestamp",
             y: "MFI",
           },
+          lineStyle: {
+            width: 1,
+          },
           tooltip: {
             valueFormatter: (value) => value.toFixed(2),
           },
-        }
+        },
       ],
     };
     chart.setOption(options);
