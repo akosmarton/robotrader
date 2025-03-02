@@ -89,7 +89,7 @@
       dataZoom: [
         {
           type: "slider",
-          start: 70,
+          start: 90,
           end: 100,
           xAxisIndex: [0, 1],
         },
