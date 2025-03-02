@@ -4,13 +4,12 @@ COPY . .
 RUN npm install && npm run build
 
 FROM golang:1.23 as builder
-
 WORKDIR /app
 COPY . .
+COPY --from=node_builder /app/dist /app/dist
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v
 
 FROM alpine
-
 COPY --from=builder /app/robotrader /app/robotrader
 ENV STORAGE_DIR=/data ALPACA_API_KEY= ALPACA_API_SECRET= MATRIX_HOMESERVER= MATRIX_USER_ID= MATRIX_ACCESS_TOKEN= MATRIX_ROOM_ID=
 VOLUME [ "/data" ]
