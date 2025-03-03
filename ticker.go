@@ -96,7 +96,7 @@ func (t *Ticker) calc() Signal {
 	}
 
 	// Algorithm
-	if t.stochD[i-1] < t.stochK[i-1] && t.stochD[i] > t.stochK[i] {
+	if t.stochK[i] > 80 && t.stochD[i] > 80 && t.stochD[i-1] < t.stochK[i-1] && t.stochD[i] > t.stochK[i] {
 		t.signal = SignalSell
 	} else if t.stochK[i] < 20 && t.stochD[i] < 20 && t.stochD[i-1] > t.stochK[i-1] && t.stochD[i] < t.stochK[i] {
 		t.signal = SignalBuy
