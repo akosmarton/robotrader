@@ -50,10 +50,16 @@
     chartData['BBH'] = chartData['BBH'].map(value => {
       return value == 0.0 ? null : value;
     });
+    chartData['BBM'] = chartData['BBM'].map(value => {
+      return value == 0.0 ? null : value;
+    });
     chartData['BBL'] = chartData['BBL'].map(value => {
       return value == 0.0 ? null : value;
     });
     chartData['SMA'] = chartData['SMA'].map(value => {
+      return value == 0.0 ? null : value;
+    });
+    chartData['ADX'] = chartData['ADX'].map(value => {
       return value == 0.0 ? null : value;
     });
     await updateChart();
@@ -78,8 +84,6 @@
           scale: true,
           gridIndex: 1,
           splitLine: { show: false },
-          min: 0,
-          max: 100,
         },
       ],
 
@@ -178,7 +182,24 @@
             y: "BBH",
           },
           showSymbol: false,
-          color: "gray",
+          color: "red",
+          lineStyle: {
+            width: 1,
+          },
+          tooltip: {
+            valueFormatter: (value) => value.toFixed(2),
+          },
+        },
+        {
+          type: "line",
+          name: "BBM",
+          seriesLayoutBy: "column",
+          encode: {
+            x: "Timestamp",
+            y: "BBM",
+          },
+          showSymbol: false,
+          color: "blue",
           lineStyle: {
             width: 1,
           },
@@ -195,7 +216,7 @@
             y: "BBL",
           },
           showSymbol: false,
-          color: "gray",
+          color: "green",
           lineStyle: {
             width: 1,
           },
@@ -205,46 +226,7 @@
         },
         {
           type: "line",
-          name: "SMA",
-          seriesLayoutBy: "column",
-          encode: {
-            x: "Timestamp",
-            y: "SMA",
-          },
-          showSymbol: false,
-          color: "red",
-          lineStyle: {
-            width: 1,
-          },
-          smooth: true,
-          tooltip: {
-            valueFormatter: (value) => value.toFixed(2),
-          },
-        },
-        {
-          type: "line",
-          name: "StochK",
-          data: chartData["stochk"],
-          showSymbol: false,
-          xAxisIndex: 1,
-          yAxisIndex: 1,
-          seriesLayoutBy: "column",
-          lineStyle: {
-            width: 1,
-          },
-          encode: {
-            x: "Timestamp",
-            y: "StochK",
-          },
-          smooth: true,
-          tooltip: {
-            valueFormatter: (value) => value.toFixed(2),
-          },
-        },
-        {
-          type: "line",
-          name: "StochD",
-          data: chartData["stochd"],
+          name: "ADX",
           showSymbol: false,
           xAxisIndex: 1,
           yAxisIndex: 1,
@@ -252,7 +234,7 @@
           seriesLayoutBy: "column",
           encode: {
             x: "Timestamp",
-            y: "StochD",
+            y: "ADX",
           },
           lineStyle: {
             width: 1,
@@ -266,7 +248,7 @@
           xAxisIndex: 1,
           yAxisIndex: 1,
           markLine: {
-            data: [{ yAxis: 20.0 }, { yAxis: 80.0 }],
+            data: [{ yAxis: 25.0 }],
             silent: true,
             symbol: ["none", "none"],
             lineStyle: {
@@ -275,26 +257,6 @@
             },
           },
           data: [],
-        },
-        {
-          type: "line",
-          name: "MFI",
-          data: chartData["mfi"],
-          showSymbol: false,
-          xAxisIndex: 1,
-          yAxisIndex: 1,
-          smooth: true,
-          seriesLayoutBy: "column",
-          encode: {
-            x: "Timestamp",
-            y: "MFI",
-          },
-          lineStyle: {
-            width: 1,
-          },
-          tooltip: {
-            valueFormatter: (value) => value.toFixed(2),
-          },
         },
       ],
     };

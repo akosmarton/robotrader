@@ -47,6 +47,7 @@ type Ticker struct {
 	bbm        []float64
 	bbl        []float64
 	mfi        []float64
+	adx        []float64
 
 	signal Signal
 }
@@ -70,6 +71,7 @@ func NewTicker(symbol string, buyPrice float64) *Ticker {
 		bbm:        []float64{},
 		bbl:        []float64{},
 		mfi:        []float64{},
+		adx:        []float64{},
 		stochK:     []float64{},
 		stochD:     []float64{},
 		signal:     SignalHold,
@@ -83,9 +85,10 @@ func (t *Ticker) calc() Signal {
 	t.sma = talib.Sma(t.close, 200)
 	t.rsi = talib.Rsi(t.close, 14)
 	t.macd, t.macdSignal, t.macdHist = talib.Macd(t.close, 12, 26, 9)
-	t.bbh, t.bbm, t.bbl = talib.BBands(t.close, 20, 2, 2, talib.SMA)
+	t.bbh, t.bbm, t.bbl = talib.BBands(t.close, 50, 2.5, 2.5, talib.SMA)
 	t.stochK, t.stochD = talib.Stoch(t.high, t.low, t.close, 14, 3, talib.SMA, 3, talib.SMA)
 	t.mfi = talib.Mfi(t.high, t.low, t.close, t.volume, 14)
+	t.adx = talib.Adx(t.high, t.low, t.close, 14)
 	lastSignal := t.signal
 
 	i := len(t.close) - 1
@@ -96,9 +99,9 @@ func (t *Ticker) calc() Signal {
 	}
 
 	// Algorithm
-	if t.stochK[i] > 80 && t.stochD[i] > 80 && t.stochD[i-1] < t.stochK[i-1] && t.stochD[i] > t.stochK[i] {
+	if t.close[i] > t.bbh[i] && t.adx[i] > 25 {
 		t.signal = SignalSell
-	} else if t.stochK[i] < 20 && t.stochD[i] < 20 && t.stochD[i-1] > t.stochK[i-1] && t.stochD[i] < t.stochK[i] {
+	} else if t.close[i] < t.bbl[i] && t.adx[i] > 25 {
 		t.signal = SignalBuy
 	} else {
 		t.signal = SignalHold
