@@ -99,9 +99,9 @@ func (t *Ticker) calc() Signal {
 	}
 
 	// Algorithm
-	if t.close[i] > t.bbh[i] && t.adx[i] > 25 {
+	if t.close[i]*1.01 > t.bbh[i] && t.adx[i] > 25 {
 		t.signal = SignalSell
-	} else if t.close[i] < t.bbl[i] && t.adx[i] > 25 {
+	} else if t.close[i]*0.99 < t.bbl[i] && t.adx[i] > 25 {
 		t.signal = SignalBuy
 	} else {
 		t.signal = SignalHold
