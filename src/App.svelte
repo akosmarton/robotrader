@@ -170,7 +170,7 @@
           },
           data: [],
           tooltip: {
-            valueFormatter: (value) => value.toFixed(2),
+            valueFormatter: (value) => value ? value.toFixed(2) : '',
           },
         },
         {
@@ -200,7 +200,7 @@
             width: 1,
           },
           tooltip: {
-            valueFormatter: (value) => value.toFixed(2),
+            valueFormatter: (value) => value ? value.toFixed(2) : '',
           },
         },
         {
@@ -217,7 +217,7 @@
             width: 1,
           },
           tooltip: {
-            valueFormatter: (value) => value.toFixed(2),
+            valueFormatter: (value) => value ? value.toFixed(2) : '',
           },
         },
         {
@@ -234,7 +234,7 @@
             width: 1,
           },
           tooltip: {
-            valueFormatter: (value) => value.toFixed(2),
+            valueFormatter: (value) => value ? value.toFixed(2) : '',
           },
         },
         {
@@ -253,7 +253,7 @@
             width: 1,
           },
           tooltip: {
-            valueFormatter: (value) => value.toFixed(2),
+            valueFormatter: (value) => value ? value.toFixed(2) : '',
           },
         },
         {
@@ -287,7 +287,7 @@
             width: 1,
           },
           tooltip: {
-            valueFormatter: (value) => value.toFixed(2),
+            valueFormatter: (value) => value ? value.toFixed(2) : '',
           },
         },
         {
