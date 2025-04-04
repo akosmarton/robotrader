@@ -71,6 +71,7 @@
       xAxis: [
         { type: "time", gridIndex: 0 },
         { type: "time", gridIndex: 1 },
+        { type: "time", gridIndex: 2 },
       ],
       yAxis: [
         {
@@ -85,6 +86,12 @@
           gridIndex: 1,
           splitLine: { show: false },
         },
+        {
+          type: "value",
+          scale: true,
+          gridIndex: 2,
+          splitLine: { show: false },
+        },
       ],
 
       tooltip: {
@@ -95,24 +102,30 @@
           type: "slider",
           start: 90,
           end: 100,
-          xAxisIndex: [0, 1],
+          xAxisIndex: [0, 1, 2],
         },
         {
           type: "inside",
-          xAxisIndex: [0, 1],
+          xAxisIndex: [0, 1, 2],
         },
       ],
       grid: [
         {
           left: "10%",
           right: "10%",
-          bottom: 200,
+          bottom: 240,
         },
         {
           left: "10%",
           right: "10%",
-          height: 80,
-          bottom: 80,
+          height: 60,
+          bottom: 70,
+        },
+        {
+          left: "10%",
+          right: "10%",
+          height: 60,
+          bottom: 150,
         },
       ],
     };
@@ -249,6 +262,55 @@
           yAxisIndex: 1,
           markLine: {
             data: [{ yAxis: 25.0 }],
+            silent: true,
+            symbol: ["none", "none"],
+            lineStyle: {
+              color: "gray",
+              width: 1,
+            },
+          },
+          data: [],
+        },
+        {
+          type: "line",
+          name: "MFI",
+          showSymbol: false,
+          xAxisIndex: 2,
+          yAxisIndex: 2,
+          smooth: true,
+          seriesLayoutBy: "column",
+          encode: {
+            x: "Timestamp",
+            y: "MFI",
+          },
+          lineStyle: {
+            width: 1,
+          },
+          tooltip: {
+            valueFormatter: (value) => value.toFixed(2),
+          },
+        },
+        {
+          type: "line",
+          xAxisIndex: 2,
+          yAxisIndex: 2,
+          markLine: {
+            data: [{ yAxis: 70.0 }],
+            silent: true,
+            symbol: ["none", "none"],
+            lineStyle: {
+              color: "gray",
+              width: 1,
+            },
+          },
+          data: [],
+        },
+        {
+          type: "line",
+          xAxisIndex: 2,
+          yAxisIndex: 2,
+          markLine: {
+            data: [{ yAxis: 30.0 }],
             silent: true,
             symbol: ["none", "none"],
             lineStyle: {
