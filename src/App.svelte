@@ -125,7 +125,7 @@
           left: "10%",
           right: "10%",
           height: 60,
-          bottom: 150,
+          bottom: 160,
         },
       ],
     };
