@@ -1,5 +1,5 @@
 <script>
-  import * as echarts from "echarts";
+  import * as echarts from "echarts/core";
   import { onMount } from "svelte";
 
   const updateInterval = 10000;
@@ -38,28 +38,28 @@
   async function fetchChartData() {
     const response = await fetch("/api/tickers/" + symbol);
     chartData = await response.json();
-    chartData['MFI'] = chartData['MFI'].map(value => {
+    chartData["MFI"] = chartData["MFI"].map((value) => {
       return value == 0.0 ? null : value;
     });
-    chartData['StochK'] = chartData['StochK'].map(value => {
+    chartData["StochK"] = chartData["StochK"].map((value) => {
       return value == 0.0 ? null : value;
     });
-    chartData['StochD'] = chartData['StochD'].map(value => {
+    chartData["StochD"] = chartData["StochD"].map((value) => {
       return value == 0.0 ? null : value;
     });
-    chartData['BBH'] = chartData['BBH'].map(value => {
+    chartData["BBH"] = chartData["BBH"].map((value) => {
       return value == 0.0 ? null : value;
     });
-    chartData['BBM'] = chartData['BBM'].map(value => {
+    chartData["BBM"] = chartData["BBM"].map((value) => {
       return value == 0.0 ? null : value;
     });
-    chartData['BBL'] = chartData['BBL'].map(value => {
+    chartData["BBL"] = chartData["BBL"].map((value) => {
       return value == 0.0 ? null : value;
     });
-    chartData['SMA'] = chartData['SMA'].map(value => {
+    chartData["SMA"] = chartData["SMA"].map((value) => {
       return value == 0.0 ? null : value;
     });
-    chartData['ADX'] = chartData['ADX'].map(value => {
+    chartData["ADX"] = chartData["ADX"].map((value) => {
       return value == 0.0 ? null : value;
     });
     await updateChart();
@@ -170,7 +170,7 @@
           },
           data: [],
           tooltip: {
-            valueFormatter: (value) => value ? value.toFixed(2) : '',
+            valueFormatter: (value) => (value ? value.toFixed(2) : ""),
           },
         },
         {
@@ -200,7 +200,7 @@
             width: 1,
           },
           tooltip: {
-            valueFormatter: (value) => value ? value.toFixed(2) : '',
+            valueFormatter: (value) => (value ? value.toFixed(2) : ""),
           },
         },
         {
@@ -217,7 +217,7 @@
             width: 1,
           },
           tooltip: {
-            valueFormatter: (value) => value ? value.toFixed(2) : '',
+            valueFormatter: (value) => (value ? value.toFixed(2) : ""),
           },
         },
         {
@@ -234,7 +234,7 @@
             width: 1,
           },
           tooltip: {
-            valueFormatter: (value) => value ? value.toFixed(2) : '',
+            valueFormatter: (value) => (value ? value.toFixed(2) : ""),
           },
         },
         {
@@ -253,7 +253,7 @@
             width: 1,
           },
           tooltip: {
-            valueFormatter: (value) => value ? value.toFixed(2) : '',
+            valueFormatter: (value) => (value ? value.toFixed(2) : ""),
           },
         },
         {
@@ -287,7 +287,7 @@
             width: 1,
           },
           tooltip: {
-            valueFormatter: (value) => value ? value.toFixed(2) : '',
+            valueFormatter: (value) => (value ? value.toFixed(2) : ""),
           },
         },
         {

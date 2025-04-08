@@ -7,6 +7,7 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 1200,
     rollupOptions: {
+      treeshake: 'smallest',
       output: {
         manualChunks: {
           echarts: ['echarts'],
