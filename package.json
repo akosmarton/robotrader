@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@myelophone/vite-plugin-purgecss": "github:myelophone/vite-plugin-purgecss",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "svelte": "^5.19.6",
     "vite": "^6.1.0"
