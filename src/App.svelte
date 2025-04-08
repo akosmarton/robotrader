@@ -1,5 +1,5 @@
 <script>
-  import * as echarts from "echarts/core";
+  import * as echarts from "echarts";
   import { onMount } from "svelte";
 
   const updateInterval = 10000;
