@@ -40,6 +40,7 @@ func (f *Fetcher) Fetch(symbol string, start time.Time, end time.Time) ([]Candle
 		Start:      start,
 		End:        end,
 		Adjustment: marketdata.All,
+		PageLimit:  10000,
 	})
 	if err != nil {
 		return nil, err
