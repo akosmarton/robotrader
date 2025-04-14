@@ -69,9 +69,9 @@
     let options = {
       animation: false,
       xAxis: [
-        { type: "time", gridIndex: 0 },
-        { type: "time", gridIndex: 1 },
-        { type: "time", gridIndex: 2 },
+        { type: "category", gridIndex: 0 },
+        { type: "category", gridIndex: 1 },
+        { type: "category", gridIndex: 2 },
       ],
       yAxis: [
         {
