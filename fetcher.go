@@ -39,7 +39,7 @@ func (f *Fetcher) Fetch(symbol string, start time.Time, end time.Time) ([]Candle
 		TimeFrame:  marketdata.OneDay,
 		Start:      start,
 		End:        end,
-		Adjustment: marketdata.All,
+		Adjustment: marketdata.AdjustmentAll,
 		PageLimit:  10000,
 	})
 	if err != nil {
