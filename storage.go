@@ -161,20 +161,6 @@ func (s *Storage) GetTickerTable() []TickerTable {
 	return ret
 }
 
-func (s *Storage) GetAllClose(symbol string) []float64 {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	t, ok := s.tickers[symbol]
-	if !ok {
-		return nil
-	}
-	t.mu.RLock()
-	defer t.mu.RUnlock()
-	ret := make([]float64, len(t.close))
-	copy(ret, t.close)
-	return ret
-}
-
 func (s *Storage) GetClose(symbol string) float64 {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -211,7 +197,7 @@ func (s *Storage) GetChange(symbol string) float64 {
 	}
 	t.mu.RLock()
 	defer t.mu.RUnlock()
-	if len(t.close) == 0 || t.buyPrice == math.NaN() {
+	if len(t.close) == 0 || math.IsNaN(t.buyPrice) {
 		return math.NaN()
 	}
 	return t.close[len(t.close)-1]/t.buyPrice*100 - 100
