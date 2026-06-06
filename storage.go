@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"math"
 	"os"
 	"sort"
@@ -94,45 +95,36 @@ type ChartData struct {
 	BuyPrice  float64
 }
 
-func (s *Storage) GetChartData(symbol string) *ChartData {
+// GetChartData writes chart data while holding the ticker read lock,
+// so response encoding sees a consistent view without slice copying.
+func (s *Storage) GetChartData(symbol string, w io.Writer) error {
 	s.mu.RLock()
-	defer s.mu.RUnlock()
 	t, ok := s.tickers[symbol]
 	if !ok {
-		return nil
+		s.mu.RUnlock()
+		_, err := io.WriteString(w, "null")
+		return err
 	}
 	t.mu.RLock()
+	s.mu.RUnlock()
 	defer t.mu.RUnlock()
-	ret := &ChartData{
-		Timestamp: make([]time.Time, len(t.timestamp)),
-		Open:      make([]float64, len(t.open)),
-		High:      make([]float64, len(t.high)),
-		Low:       make([]float64, len(t.low)),
-		Close:     make([]float64, len(t.close)),
-		BBH:       make([]float64, len(t.bbh)),
-		BBM:       make([]float64, len(t.bbm)),
-		BBL:       make([]float64, len(t.bbl)),
-		StochK:    make([]float64, len(t.stochK)),
-		StochD:    make([]float64, len(t.stochD)),
-		MFI:       make([]float64, len(t.mfi)),
-		SMA:       make([]float64, len(t.sma)),
-		ADX:       make([]float64, len(t.adx)),
+
+	return json.NewEncoder(w).Encode(&ChartData{
+		Timestamp: t.timestamp,
+		Open:      t.open,
+		High:      t.high,
+		Low:       t.low,
+		Close:     t.close,
+		BBH:       t.bbh,
+		BBM:       t.bbm,
+		BBL:       t.bbl,
+		StochK:    t.stochK,
+		StochD:    t.stochD,
+		MFI:       t.mfi,
+		SMA:       t.sma,
+		ADX:       t.adx,
 		BuyPrice:  t.buyPrice,
-	}
-	copy(ret.Timestamp, t.timestamp)
-	copy(ret.Open, t.open)
-	copy(ret.High, t.high)
-	copy(ret.Low, t.low)
-	copy(ret.Close, t.close)
-	copy(ret.BBH, t.bbh)
-	copy(ret.BBM, t.bbm)
-	copy(ret.BBL, t.bbl)
-	copy(ret.StochK, t.stochK)
-	copy(ret.StochD, t.stochD)
-	copy(ret.MFI, t.mfi)
-	copy(ret.ADX, t.adx)
-	copy(ret.SMA, t.sma)
-	return ret
+	})
 }
 
 type TickerTable struct {
