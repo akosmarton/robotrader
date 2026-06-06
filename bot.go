@@ -1,18 +1,20 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"html"
+	"strconv"
 	"time"
 
-	"maunium.net/go/mautrix"
-	"maunium.net/go/mautrix/event"
-	"maunium.net/go/mautrix/id"
+	"github.com/go-telegram/bot"
+	"github.com/go-telegram/bot/models"
 )
 
 type Bot struct {
 	startTime time.Time
-	roomId    id.RoomID
-	client    *mautrix.Client
+	chatID    int64
+	client    *bot.Bot
 	msg       chan string
 }
 
@@ -21,37 +23,55 @@ func (b *Bot) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func NewBot(homeserver string, userId string, accessToken string, roomId string) *Bot {
-	client, err := mautrix.NewClient(homeserver, id.UserID(userId), accessToken)
+func NewBot(botToken string, chatId string) *Bot {
+	chatID, err := strconv.ParseInt(chatId, 10, 64)
 	if err != nil {
 		return nil
 	}
+
 	b := &Bot{
 		startTime: time.Now(),
-		roomId:    id.RoomID(roomId),
-		client:    client,
+		chatID:    chatID,
 		msg:       make(chan string, 100),
 	}
-	client.Syncer.(*mautrix.DefaultSyncer).OnEvent(b.handler)
+
+	client, err := bot.New(botToken, bot.WithDefaultHandler(b.handler))
+	if err != nil {
+		return nil
+	}
+	b.client = client
+
 	return b
 }
 
-func (b *Bot) handler(ctx context.Context, evt *event.Event) {
-	if evt.Timestamp < b.startTime.UnixMilli() {
+func (b *Bot) handler(ctx context.Context, tg *bot.Bot, update *models.Update) {
+	_ = ctx
+	_ = tg
+
+	if update.Message == nil {
 		return
 	}
-	if evt.Sender == b.client.UserID {
+	if update.Message.Chat.ID != b.chatID {
 		return
 	}
-	if evt.RoomID != b.roomId {
+	if int64(update.Message.Date)*1000 < b.startTime.UnixMilli() {
 		return
 	}
-	b.msg <- evt.Content.AsMessage().Body
-	b.client.SendReceipt(ctx, evt.RoomID, evt.ID, event.ReceiptTypeRead, mautrix.ReqSetReadMarkers{FullyRead: evt.ID})
+
+	text := update.Message.Text
+	if text == "" {
+		text = update.Message.Caption
+	}
+	if text == "" {
+		return
+	}
+
+	b.msg <- text
 }
 
 func (b *Bot) Run(ctx context.Context) error {
-	return b.client.SyncWithContext(ctx)
+	b.client.Start(ctx)
+	return ctx.Err()
 }
 
 func (b *Bot) Message() chan string {
@@ -59,37 +79,34 @@ func (b *Bot) Message() chan string {
 }
 
 func (b *Bot) SendText(msg string) {
-	b.client.SendText(context.Background(), b.roomId, msg)
+	_, _ = b.client.SendMessage(context.Background(), &bot.SendMessageParams{
+		ChatID: b.chatID,
+		Text:   msg,
+	})
 }
 
 func (b *Bot) SendHtml(msg string) {
-	b.client.SendMessageEvent(context.Background(), b.roomId, event.EventMessage, event.MessageEventContent{
-		MsgType:       event.MsgText,
-		Body:          "",
-		Format:        "org.matrix.custom.html",
-		FormattedBody: msg,
+	_, _ = b.client.SendMessage(context.Background(), &bot.SendMessageParams{
+		ChatID:    b.chatID,
+		Text:      msg,
+		ParseMode: models.ParseModeHTML,
 	})
 }
 
 func (b *Bot) SendCode(msg string) {
-	b.client.SendMessageEvent(context.Background(), b.roomId, event.EventMessage, event.MessageEventContent{
-		MsgType:       event.MsgText,
-		Body:          msg,
-		Format:        "org.matrix.custom.html",
-		FormattedBody: "<pre><code class=\"language-plaintext\">" + msg + "</code></pre>",
-	})
+	b.SendHtml("<pre><code>" + html.EscapeString(msg) + "</code></pre>")
 }
 
 func (b *Bot) SendImage(buf []byte, contentType string, filename string) error {
-	resp, err := b.client.UploadBytes(context.Background(), buf, contentType)
-	if err != nil {
-		return err
-	}
-	_, err = b.client.SendMessageEvent(context.Background(), b.roomId, event.EventMessage, event.MessageEventContent{
-		MsgType:  event.MsgImage,
-		Body:     filename,
-		URL:      id.ContentURIString(resp.ContentURI.String()),
-		FileName: filename,
+	_ = contentType
+
+	_, err := b.client.SendPhoto(context.Background(), &bot.SendPhotoParams{
+		ChatID: b.chatID,
+		Photo: &models.InputFileUpload{
+			Filename: filename,
+			Data:     bytes.NewReader(buf),
+		},
+		Caption: filename,
 	})
 	return err
 }

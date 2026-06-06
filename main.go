@@ -25,18 +25,25 @@ const (
 
 func main() {
 	log.SetFlags(0)
+
+	telegram_bot_token := os.Getenv("TELEGRAM_BOT_TOKEN")
+	telegram_chat_id := os.Getenv("TELEGRAM_CHAT_ID")
+	if telegram_bot_token == "" || telegram_chat_id == "" {
+		log.Fatal("TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is not set")
+	}
+
+	bot := NewBot(telegram_bot_token, telegram_chat_id)
+	if bot == nil {
+		log.Fatal("Failed to create bot")
+	}
+	log.SetOutput(io.MultiWriter(os.Stdout, bot))
+
+	log.Print("Starting bot...")
+
 	alpacaApiKey := os.Getenv("ALPACA_API_KEY")
 	alpacaApiSecret := os.Getenv("ALPACA_API_SECRET")
 	if alpacaApiKey == "" || alpacaApiSecret == "" {
 		log.Fatal("ALPACA_API_KEY or ALPACA_API_SECRET is not set")
-	}
-
-	matrixHomeserver := os.Getenv("MATRIX_HOMESERVER")
-	matrixUserId := os.Getenv("MATRIX_USER_ID")
-	matrixAccessToken := os.Getenv("MATRIX_ACCESS_TOKEN")
-	matrixRoomId := os.Getenv("MATRIX_ROOM_ID")
-	if matrixHomeserver == "" || matrixUserId == "" || matrixAccessToken == "" || matrixRoomId == "" {
-		log.Fatal("MATRIX_HOMESERVER, MATRIX_USER_ID, MATRIX_ACCESS_TOKEN or MATRIX_ROOM_ID is not set")
 	}
 
 	storageDir := os.Getenv("STORAGE_DIR")
@@ -53,11 +60,6 @@ func main() {
 	defer storage.Close()
 
 	fetcher := NewFetcher(alpacaApiKey, alpacaApiSecret)
-	bot := NewBot(matrixHomeserver, matrixUserId, matrixAccessToken, matrixRoomId)
-	if bot == nil {
-		log.Fatal("Failed to create bot")
-	}
-	log.SetOutput(io.MultiWriter(os.Stdout, bot))
 
 	log.Print("Starting...")
 
@@ -116,7 +118,7 @@ func main() {
 	defer log.Println("Stopped")
 
 	shutdown := make(chan os.Signal, 1)
-	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
+	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
 	// Web server
 	e := echo.New()
@@ -129,8 +131,10 @@ func main() {
 	})
 	e.GET("/api/tickers/:symbol", func(c echo.Context) error {
 		symbol := c.Param("symbol")
-		chartData := storage.GetChartData(symbol)
-		return c.JSON(200, chartData)
+		resp := c.Response()
+		resp.Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+		resp.WriteHeader(http.StatusOK)
+		return storage.GetChartData(symbol, resp)
 	})
 	e.Static("/", "dist")
 	e.HideBanner = true

@@ -12,6 +12,6 @@ FROM alpine
 WORKDIR /app
 COPY --from=node_builder /app/dist /app/dist
 COPY --from=builder /app/robotrader /app/robotrader
-ENV STORAGE_DIR=/data ALPACA_API_KEY= ALPACA_API_SECRET= MATRIX_HOMESERVER= MATRIX_USER_ID= MATRIX_ACCESS_TOKEN= MATRIX_ROOM_ID=
+ENV STORAGE_DIR=/data ALPACA_API_KEY= ALPACA_API_SECRET= TELEGRAM_BOT_TOKEN= TELEGRAM_CHAT_ID=
 VOLUME [ "/data" ]
 ENTRYPOINT [ "/app/robotrader" ]
